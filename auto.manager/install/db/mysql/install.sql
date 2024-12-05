@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS b_auto_manager_smart_process (
+    SMART_PROCESS_ID INT NOT NULL,
+    PRIMARY KEY (SMART_PROCESS_ID)
+) ENGINE = InnoDB;
