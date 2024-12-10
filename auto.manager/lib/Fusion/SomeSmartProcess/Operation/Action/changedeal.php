@@ -31,9 +31,6 @@ class ChangeDeal extends Operation\Action
     public function process(Item $item): Main\Result
     {
         $result = new Main\Result();
-
-        AddMessage2Log("Заблокировано не поле: It works!", "custom_log");
-
         $unique = $this->checkUnique($item, $this->userFieldId.$this->vinCodeFieldName);
         $validationYear = $this->dataValidationYear($item, $this->userFieldId.$this->registrationDateFieldName);
 
@@ -60,8 +57,8 @@ class ChangeDeal extends Operation\Action
             );
         }
 
-//        $this->hideField($item, $this->categoryId.$this->stageStatus, $this->userFieldId.$this->vinCodeFieldName);
-
+        $fuel = $this->hideField($item, 'b_auto_manager_smart_process_hide_field_fuel_type', $this->categoryId.'NEW', $this->userFieldId.'FUEL_TYPE', $this->userFieldId.'VIN_CODE', 'VIN', 'FUEL_TYPE');
+        $year = $this->hideField($item, 'b_auto_manager_smart_process_hide_field_year', $this->categoryId.'NEW', $this->userFieldId.'YEAR_OF_MANUFACTURE', $this->userFieldId.'VIN_CODE', 'VIN', 'YEAR_OF_MANUFACTURE');
 
         return $result;
     }
@@ -103,23 +100,56 @@ class ChangeDeal extends Operation\Action
         }return true;
     }
 
-    public function hideField(Item $item, string $stageId, string $fieldName)
+    public function hideField(Item $item, string $tableName, string $stageId, string $fieldName, string $keyFieldName, string $keyNoteName,  $hideNoteNmae )
     {
+        global $DB;
+        $key = $item->getData()[$keyFieldName];
         if (
             $item->isChangedStageId()
-            && $item->getStageId() === $stageId
+            && $item->getStageId() !== $stageId
         ) {
+            $fieldValue = $item->getData()[$fieldName];
+            if (empty($fieldValue)) {
+                return;
+            }
+
+            $this->addNoteBd($DB, $tableName, $key, $fieldValue, $keyNoteName, $hideNoteNmae);
+
             $data = $item->set($fieldName, null);
             $data->save();
         }
 
-        if (
-            $item->isChangedStageId()
-            && $item->remindActual(Item::FIELD_NAME_STAGE_ID) === $stageId
-        ){
-            $data = $item->set($fieldName, "default");
+        if ($item->getStageId() === $stageId){
+            $value = $this->getNoteBd($DB, $tableName, $key, $hideNoteNmae, $keyNoteName);
+            if (empty($value)){
+                return;
+            }
+            $data = $item->set($fieldName, $value);
             $data->save();
+
+            $this->deleteNoteBd($DB, $tableName, $key, $keyNoteName);
         }
+    }
+
+    public function addNoteBd($DB, string $tableName, string $key,  string $fieldValue, string $keyNoteName, $hideNoteNmae)
+    {
+        $sql = "INSERT INTO $tableName ($keyNoteName, $hideNoteNmae) VALUES ('" . $key . "', " . $fieldValue . ")";
+        $DB->Query($sql);
+    }
+
+    public function getNoteBd($DB, string $tableName, string $key, string $noteCellName, string $keyNoteName)
+    {
+        $sql = "SELECT $noteCellName FROM $tableName WHERE $keyNoteName = '".$key."'";
+        $result = $DB->Query($sql);
+        if ($row = $result->Fetch()) {
+            return $row[$noteCellName];
+        }return null;
+    }
+
+    public function deleteNoteBd($DB, string $tableName, string $key, string $keyNoteName) : void
+    {
+        $sql = "DELETE FROM $tableName WHERE $keyNoteName = '".$key."'";
+        $DB->Query($sql);
     }
 
 }

@@ -23,20 +23,20 @@ class AddDealCheck extends Operation\Action
     {
         $result = new Main\Result();
 
-//        $unique = $this->checkUnique($item, $this->userFieldId.$this->vinCodeFieldName);
-//        $validationYear = $this->dataValidationYear($item, $this->userFieldId.$this->registrationDateFieldName);
-//
-//        if (!$unique){
-//            $result->addError(
-//                new Main\Error('Машина с таким вин кодом уже существует')
-//            );
-//        }
-//
-//        if (!$validationYear){
-//            $result->addError(
-//                new Main\Error('Неправильно указана дата')
-//            );
-//        }
+        $unique = $this->checkUnique($item, $this->userFieldId.$this->vinCodeFieldName);
+        $validationYear = $this->dataValidationYear($item, $this->userFieldId.$this->registrationDateFieldName);
+
+        if (!$unique){
+            $result->addError(
+                new Main\Error('Машина с таким вин кодом уже существует')
+            );
+        }
+
+        if (!$validationYear){
+            $result->addError(
+                new Main\Error('Неправильно указана дата')
+            );
+        }
 
         $this->addDefaultValue($item, FormatDate('d.m.Y H:i:s', MakeTimeStamp(date('Y-m-d H:i:s'))), $this->userFieldId.$this->registrationDateFieldName);
         return $result;

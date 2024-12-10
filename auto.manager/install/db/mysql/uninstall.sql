@@ -1,1 +1,4 @@
 drop table if exists b_auto_manager_smart_process;
+drop table if exists b_auto_manager_smart_process_hide_field_fuel_type;
+drop table if exists b_auto_manager_smart_process_hide_field_year;
+drop table if exists b_auto_manager_smart_process_hide_field_registration_date;

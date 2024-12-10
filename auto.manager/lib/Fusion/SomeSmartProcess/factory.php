@@ -4,6 +4,7 @@ namespace Auto\Manager\Fusion\SomeSmartProcess;
 use \Bitrix\Main,
     \Bitrix\Crm,
     \Bitrix\Crm\Service\Factory\Dynamic;
+use Bitrix\Seo\Adv\Auto;
 
 
 Main\Loader::requireModule('crm');
@@ -15,7 +16,7 @@ class Factory extends Dynamic
 
         return $operation->addAction(
             Crm\Service\Operation::ACTION_AFTER_SAVE,
-            new Auto\Manager\Operation\Action\SendMessage()
+            new Operation\Action\SendMessage()
         );
     }
 
@@ -24,7 +25,7 @@ class Factory extends Dynamic
         $operation = parent::getUpdateOperation($item, $context);
         return $operation->addAction(
             Crm\Service\Operation::ACTION_BEFORE_SAVE,
-            new Auto\Manager\Operation\Action\ChangeDeal($item->getEntityTypeId(), 'IN_OPERATION', 'VIN_CODE', 'REGISTRATION_DATE', ['BRAND', 'MODEL'])
+            new Operation\Action\ChangeDeal($item->getEntityTypeId(), 'NEW', 'VIN_CODE', 'REGISTRATION_DATE', ['VIN_CODE', 'LICENSE_PLATE_NUMBER'])
         );
     }
 
@@ -34,7 +35,7 @@ class Factory extends Dynamic
 
         return $operation->addAction(
             Crm\Service\Operation::ACTION_AFTER_SAVE,
-            new  Auto\Manager\Operation\Action\AddDealCheck($item->getEntityTypeId(), 'REGISTRATION_DATE', 'VIN_CODE')
+            new  Operation\Action\AddDealCheck($item->getEntityTypeId(), 'REGISTRATION_DATE', 'VIN_CODE')
         );
 
     }

@@ -5,9 +5,13 @@ use Bitrix\Main\Loader;
 use \Bitrix\Crm\Service;
 use Auto\Manager\CategoryCreator;
 use Bitrix\Crm\Model\Dynamic\TypeTable;
-use Bitrix\Main\DI\ServiceLocator;
+use Bitrix\Main\Config\Option;
+use Bitrix\Main\Application;
+use Bitrix\Main\IO\Directory;
 Loader::includeModule('crm');
 Loc::loadMessages(__FILE__);
+
+
 
 
 
@@ -38,19 +42,74 @@ class auto_manager extends CModule
         if (Loader::includeModule($this->MODULE_ID))
         {
             $this->installBD();
+            $this->installFiles();
             $this->createSmartProcess();
             $this->creatFiled();
             new CategoryCreator($this->smartProcessEntityId);
+            $this->installComposerDependencies();
+
+            \Bitrix\Main\EventManager::getInstance()->registerEventHandler(
+                'main',
+                'OnPageStart',
+                $this->MODULE_ID,
+                'Auto\\Manager\\CarManagerEvent',
+                'onPageStartAutoManagerEvent'
+            );
         }
     }
+
+    public function installFiles() {
+        CopyDirFiles(
+            __DIR__.'/assets/components',
+            Application::getDocumentRoot().'/local/components/'.$this->MODULE_ID.'/',
+            true,
+            true
+        );
+    }
+
+    private function installComposerDependencies()
+    {
+        $moduleDir = $_SERVER['DOCUMENT_ROOT'] . '/local/modules/'.$this->MODULE_ID;
+        $composerPath = escapeshellcmd($moduleDir . '/composer.json');
+
+        if (file_exists($composerPath)) {
+            $command = 'composer install --no-dev --prefer-dist --working-dir=' . escapeshellarg($moduleDir);
+            exec($command, $output, $result);
+        }
+    }
+
+    private function removeComposerDependencies()
+    {
+        $vendorDir = Application::getDocumentRoot() . '/local/modules/'.$this->MODULE_ID.'/vendor';
+        if (Directory::isDirectoryExists($vendorDir)) {
+            Directory::deleteDirectory($vendorDir);
+        }
+    }
+
 
     public function DoUninstall()
     {
         $this->getItem();
+        $this->unInstallFiles();
         $this->deleteSmartProccesItems();
         $this->deleteSmartProcess();
         $this->unInstallDB();
+        $this->removeComposerDependencies();
+        \Bitrix\Main\EventManager::getInstance()->unRegisterEventHandler(
+            'main',
+            'OnPageStart',
+            $this->MODULE_ID,
+            'Auto\\Manager\\CarManagerEvent',
+            'onPageStartAutoManagerEvent'
+        );
         ModuleManager::unRegisterModule($this->MODULE_ID);
+    }
+
+    public function unInstallFiles() {
+        Directory::deleteDirectory(
+            Application::getDocumentRoot().'/local/components/'.$this->MODULE_ID
+        );
+        Option::delete($this->MODULE_ID);
     }
 
 
@@ -75,14 +134,8 @@ class auto_manager extends CModule
         $result = $type->save();
         if($result->isSuccess()){
             $this->smartProcessEntityId = $type->getEntityTypeId();
-            $dataSql = file_get_contents(__DIR__ . '/db/mysql/data.sql');
-            $dataSql = str_replace(
-                '#SMART_PROCESS_ID#',
-                $DB->ForSql($type->getEntityTypeId()),
-                $dataSql
-            );
-
-            $DB->Query($dataSql);
+            $sql = "INSERT INTO b_auto_manager_smart_process (SMART_PROCESS_ID) VALUES (".$this->smartProcessEntityId.")";
+            $DB->Query($sql);
         }else{
             return;
         }
@@ -90,12 +143,13 @@ class auto_manager extends CModule
 
     public function getItem()
     {
-        global $DB;
+        global $DB, $APPLICATION;
         $sql = "SELECT SMART_PROCESS_ID FROM b_auto_manager_smart_process LIMIT 1";
         $result = $DB->Query($sql);
         if ($row = $result->Fetch()) {
             $this->smartProcessEntityId = $row['SMART_PROCESS_ID'];
         }
+
     }
 
     public function deleteSmartProcess()
@@ -128,17 +182,40 @@ class auto_manager extends CModule
 
     public function installBD()
     {
-        $sql = file_get_contents(__DIR__."/db/mysql/install.sql");
-        if($sql){
-            Bitrix\Main\Application::getConnection()->query($sql);
+        global $DB, $APPLICATION;
+
+        $filePath = $_SERVER["DOCUMENT_ROOT"].'/local/modules/auto.manager/install/db/mysql/install.sql';
+        if (!file_exists($filePath)) {
+            throw new \Exception("SQL-файл не найден: " . $filePath);
+        }
+
+        $errors = $DB->RunSQLBatch($filePath);
+
+        if (!empty($errors)) {
+            foreach ($errors as $error) {
+                echo "Ошибка: " . htmlspecialchars($error) . "<br>";
+            }
+            $APPLICATION->ThrowException(implode("", $errors));
+            return false;
         }
     }
 
     public function unInstallDB()
     {
-        $sql = file_get_contents(__DIR__."/db/mysql/uninstall.sql");
-        if($sql){
-            Bitrix\Main\Application::getConnection()->query($sql);
+        global $DB, $APPLICATION;
+        $filePath = $_SERVER["DOCUMENT_ROOT"].'/local/modules/auto.manager/install/db/mysql/uninstall.sql';
+        if (!file_exists($filePath)) {
+            throw new \Exception("SQL-файл не найден: " . $filePath);
+        }
+
+        $errors = $DB->RunSQLBatch($filePath);
+
+        if (!empty($errors)) {
+            foreach ($errors as $error) {
+                echo "Ошибка: " . htmlspecialchars($error) . "<br>";
+            }
+            $APPLICATION->ThrowException(implode("", $errors));
+            return false;
         }
     }
 
@@ -257,7 +334,7 @@ class auto_manager extends CModule
                 'USER_TYPE_ID' => 'string',
                 'SORT' => 40,
                 'MULTIPLE' => 'N',
-                'MANDATORY' => 'N',
+                'MANDATORY' => 'Y',
                 'SHOW_IN_LIST' => 'Y',
                 'EDIT_IN_LIST' => 'Y',
                 'IS_SEARCHABLE' => 'Y',
