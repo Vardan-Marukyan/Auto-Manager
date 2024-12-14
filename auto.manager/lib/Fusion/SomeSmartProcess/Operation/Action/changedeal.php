@@ -36,7 +36,7 @@ class ChangeDeal extends Operation\Action
 
 
         foreach ($this->blockFieldsNames as $fieldName){
-            $blockFieldResult = $this->blockField($item, $this->categoryId.$this->stageStatus, $fieldName);
+            $blockFieldResult = $this->blockField($item, $this->categoryId.'IN_OPERATION', $fieldName);
 
             if (!$blockFieldResult){
                 $result->addError(

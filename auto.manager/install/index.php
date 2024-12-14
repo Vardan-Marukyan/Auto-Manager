@@ -11,10 +11,6 @@ use Bitrix\Main\IO\Directory;
 Loader::includeModule('crm');
 Loc::loadMessages(__FILE__);
 
-
-
-
-
 class auto_manager extends CModule
 {
     private int $smartProcessEntityId;
@@ -67,6 +63,14 @@ class auto_manager extends CModule
         );
     }
 
+    public function unInstallFiles() {
+        Directory::deleteDirectory(
+            Application::getDocumentRoot().'/local/components/'.$this->MODULE_ID
+        );
+        Option::delete($this->MODULE_ID);
+    }
+
+
     private function installComposerDependencies()
     {
         $moduleDir = $_SERVER['DOCUMENT_ROOT'] . '/local/modules/'.$this->MODULE_ID;
@@ -104,14 +108,6 @@ class auto_manager extends CModule
         );
         ModuleManager::unRegisterModule($this->MODULE_ID);
     }
-
-    public function unInstallFiles() {
-        Directory::deleteDirectory(
-            Application::getDocumentRoot().'/local/components/'.$this->MODULE_ID
-        );
-        Option::delete($this->MODULE_ID);
-    }
-
 
     public function createSmartProcess()
     {
@@ -184,7 +180,7 @@ class auto_manager extends CModule
     {
         global $DB, $APPLICATION;
 
-        $filePath = $_SERVER["DOCUMENT_ROOT"].'/local/modules/auto.manager/install/db/mysql/install.sql';
+        $filePath = __DIR__.'/db/mysql/install.sql';
         if (!file_exists($filePath)) {
             throw new \Exception("SQL-файл не найден: " . $filePath);
         }
@@ -203,7 +199,7 @@ class auto_manager extends CModule
     public function unInstallDB()
     {
         global $DB, $APPLICATION;
-        $filePath = $_SERVER["DOCUMENT_ROOT"].'/local/modules/auto.manager/install/db/mysql/uninstall.sql';
+        $filePath = __DIR__.'/db/mysql/uninstall.sql';
         if (!file_exists($filePath)) {
             throw new \Exception("SQL-файл не найден: " . $filePath);
         }
