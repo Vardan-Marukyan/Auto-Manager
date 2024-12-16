@@ -123,7 +123,6 @@ class UploadExelFile extends Controller
     {
 
         foreach ($array as $value) {
-            AddMessage2Log("Заблокировано не поле: It work!" . $value['VALUE'], "custom_log");
             if ($value['VALUE'] === $dataValue) {
                 return $value['ID'];
             }

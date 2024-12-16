@@ -1,11 +1,5 @@
 {
   "require": {
     "phpoffice/phpspreadsheet": "^3.6"
-  },
-
-  "autoload": {
-    "psr-4": {
-      "Auto\\Manager\\Fusion\\": "local/modules/auto.manager/lib/Fusion/"
-    }
   }
 }

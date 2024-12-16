@@ -78,7 +78,7 @@ class Container extends Service\Container
         if ($row = $result->Fetch()) {
             return $row['SMART_PROCESS_ID'];
         }
-        return 0;
+        return null;
     }
 
 
