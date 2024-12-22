@@ -55,7 +55,7 @@ class Container extends Service\Container
                     $parameters = $result->getComponentParameters();
                     $entityTypeId = $parameters['ENTITY_TYPE_ID'] ?? $parameters['entityTypeId'] ?? null;
 
-                    if ((int)$entityTypeId === $this->container->getSmartEntityId())
+                    if ($entityTypeId === $this->container->getSmartEntityId())
                     {
                         $result = new Router\ParseResult(
                             'auto.manager:crm.item.kanban',

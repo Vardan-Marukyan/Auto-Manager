@@ -5,6 +5,7 @@ use Bitrix\Main\Application;
 use Bitrix\Main\Engine\Controller;
 use Bitrix\Main\Engine\ActionFilter;
 use Bitrix\Main\Context;
+use Bitrix\Crm\Model\Dynamic\TypeTable;
 
 \Bitrix\Main\Loader::includeModule('crm');
 
@@ -202,14 +203,9 @@ class UploadExelFile extends Controller
         }return true;
     }
 
-    private function getSmartEntityId() : int
+    private function getSmartEntityId()
     {
-        global $DB;
-        $sql = "SELECT SMART_PROCESS_ID FROM b_auto_manager_smart_process LIMIT 1";
-        $result = $DB->Query($sql);
-        if ($row = $result->Fetch()) {
-            return $row['SMART_PROCESS_ID'];
-        }
-        return 0;
+        $smartProcess = TypeTable::getRow(['filter' => ['=CODE' => 'AUTO_MANAGER']]);
+        return $smartProcess['ENTITY_TYPE_ID'];
     }
 }

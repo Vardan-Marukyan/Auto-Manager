@@ -34,8 +34,6 @@ class CreateSmartProcess
         $result = $type->save();
         if($result->isSuccess()){
             $this->smartProcessEntityId = $type->getEntityTypeId();
-            $sql = "INSERT INTO b_auto_manager_smart_process (SMART_PROCESS_ID) VALUES (".$this->smartProcessEntityId.")";
-            $DB->Query($sql);
         }
     }
 
