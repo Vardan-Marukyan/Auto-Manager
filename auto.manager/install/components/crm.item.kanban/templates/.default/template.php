@@ -50,7 +50,7 @@ $this->getComponent()->addToolbar($this);
                     progressBarTitle: 'Загрузка...',
                 },
                 {
-                    action: 'finalize',  // Завершение процесса
+                    action: 'finalize',
                     finalize: true
                 }
             ],
@@ -79,10 +79,10 @@ $this->getComponent()->addToolbar($this);
                 'RequestCanceled': 'Процесс остановлен',
                 'RequestCompleted': 'Готово!',
             }).setHandler(BX.UI.StepProcessing.ProcessCallback.RequestStart, function(actionData) {
-                var fileInput = progress.getDialog().getOptionField('File'); // Получаем файл из формы
+                var fileInput = progress.getDialog().getOptionField('File');
                 var file = fileInput.getValue();
                 if (file) {
-                    actionData.append('File', file[0]); // Добавляем файл в запрос
+                    actionData.append('File', file[0]);
                 }
             })
 

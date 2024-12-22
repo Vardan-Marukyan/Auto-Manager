@@ -3,9 +3,10 @@
 namespace Auto\Manager\Fusion\Crm;
 
 use \Bitrix\Main,
-    \Bitrix\Crm\Service;
-use Bitrix\Crm\Service\Router;
-use Bitrix\Crm\Service\Factory\Dynamic;
+    \Bitrix\Crm\Service,
+    \Bitrix\Crm\Service\Router,
+    \Bitrix\Crm\Service\Factory\Dynamic,
+    \Bitrix\Crm\Model\Dynamic\TypeTable;
 
 Main\Loader::requireModule('crm');
 
@@ -70,17 +71,10 @@ class Container extends Service\Container
     }
 
 
-    public function getSmartEntityId() : int
+    public function getSmartEntityId()
     {
-        global $DB;
-        $sql = "SELECT SMART_PROCESS_ID FROM b_auto_manager_smart_process LIMIT 1";
-        $result = $DB->Query($sql);
-        if ($row = $result->Fetch()) {
-            return $row['SMART_PROCESS_ID'];
-        }
-        return null;
+        $smartProcess = TypeTable::getRow(['filter' => ['=CODE' => 'AUTO_MANAGER']]);
+        return $smartProcess['ENTITY_TYPE_ID'];
     }
-
-
 }
 

@@ -57,9 +57,6 @@ class ChangeDeal extends Operation\Action
             );
         }
 
-        $fuel = $this->hideField($item, 'b_auto_manager_smart_process_hide_field_fuel_type', $this->categoryId.'NEW', $this->userFieldId.'FUEL_TYPE', $this->userFieldId.'VIN_CODE', 'VIN', 'FUEL_TYPE');
-        $year = $this->hideField($item, 'b_auto_manager_smart_process_hide_field_year', $this->categoryId.'NEW', $this->userFieldId.'YEAR_OF_MANUFACTURE', $this->userFieldId.'VIN_CODE', 'VIN', 'YEAR_OF_MANUFACTURE');
-
         return $result;
     }
 
@@ -130,26 +127,4 @@ class ChangeDeal extends Operation\Action
             $this->deleteNoteBd($DB, $tableName, $key, $keyNoteName);
         }
     }
-
-    public function addNoteBd($DB, string $tableName, string $key,  string $fieldValue, string $keyNoteName, $hideNoteNmae)
-    {
-        $sql = "INSERT INTO $tableName ($keyNoteName, $hideNoteNmae) VALUES ('" . $key . "', " . $fieldValue . ")";
-        $DB->Query($sql);
-    }
-
-    public function getNoteBd($DB, string $tableName, string $key, string $noteCellName, string $keyNoteName)
-    {
-        $sql = "SELECT $noteCellName FROM $tableName WHERE $keyNoteName = '".$key."'";
-        $result = $DB->Query($sql);
-        if ($row = $result->Fetch()) {
-            return $row[$noteCellName];
-        }return null;
-    }
-
-    public function deleteNoteBd($DB, string $tableName, string $key, string $keyNoteName) : void
-    {
-        $sql = "DELETE FROM $tableName WHERE $keyNoteName = '".$key."'";
-        $DB->Query($sql);
-    }
-
 }

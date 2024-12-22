@@ -15,12 +15,8 @@ class DeleteSmartProcess
 
     public function getSmartProcessEntityId()
     {
-        global $DB, $APPLICATION;
-        $sql = "SELECT SMART_PROCESS_ID FROM b_auto_manager_smart_process LIMIT 1";
-        $result = $DB->Query($sql);
-        if ($row = $result->Fetch()) {
-            return $this->smartProcessEntityId = $row['SMART_PROCESS_ID'];
-        }return null;
+        $smartProcess = TypeTable::getRow(['filter' => ['=CODE' => 'AUTO_MANAGER']]);
+        return $smartProcess['ENTITY_TYPE_ID'];
     }
 
     public function deleteSmartProcess()

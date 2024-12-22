@@ -1,7 +1,6 @@
 <?php
 namespace Auto\Manager;
 use \Bitrix\Crm\Service;
-use Auto\Manager\CategoryCreator;
 
 class CreateSmartProcess
 {
